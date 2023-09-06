@@ -4,9 +4,32 @@ class TreeGenerator:
     """
     Generates a textual representation of a directory tree.
     """
+    MINIMAL = {
+        'line_prefix': '', 
+        'last_line_prefix': '',
+        'directory_prefix': '/',
+        'directory_suffix': '', 
+        'spacer': '    '}
+    
+    FULL = {
+        'line_prefix': '|', 
+        'last_line_prefix': '`', 
+        'directory_prefix': '', 
+        'directory_suffix': ':', 
+        'spacer':'-- '}
+    
+    ARROW = {
+        'line_prefix': '|',
+        'last_line_prefix': '>',
+        'directory_prefix': '',
+        'directory_suffix': '/',
+        'spacer': '>--> ',
+        'line_prefix_preceeds_spacer': False}
 
-    def __init__(self, line_prefix: str = '|', last_line_prefix: str = '`', directory_suffix: str = ':', 
-                 spacer: str = '-- ', ignore: list = []):
+    def __init__(self, line_prefix: str = '|', last_line_prefix: str = '`', 
+                 directory_prefix: str = '', directory_suffix: str = ':', 
+                 spacer: str = '-- ', line_prefix_preceeds_spacer = True,
+                 ignore: list = []):
         """
         Initialize the TreeGenerator with formatting options.
 
@@ -24,7 +47,9 @@ class TreeGenerator:
         self.spacer = spacer
         self.top_spaces = line_prefix + (' ' * len(spacer))
         self.base_spaces = ' ' * (len(line_prefix) + len(spacer))
+        self.directory_prefix = directory_prefix
         self.directory_suffix = directory_suffix
+        self.line_prefix_preceeds_spacer = line_prefix_preceeds_spacer
         self.ignore = ignore
     
     @staticmethod
@@ -63,6 +88,9 @@ class TreeGenerator:
         if os.path.exists(path):
             tree = _tree
             spacer = self.spacer
+            dp = self.directory_prefix
+            ds = self.directory_suffix
+            
             items = sorted(os.listdir(path))
             for index, item in enumerate(items):
                 if item in self.ignore:
@@ -72,14 +100,24 @@ class TreeGenerator:
                 is_last = index == len(items) - 1
                 line_prefix = self.last_line_prefix if is_last else self.line_prefix
                 object_prefix = self.top_spaces if not is_last else self.base_spaces
-                treeline = f'{indent}{line_prefix}{spacer}{item}'
                 
                 if os.path.isdir(full_item_path):
-                    treeline += self.directory_suffix
+                    
+                    if self.line_prefix_preceeds_spacer:
+                        treeline = f'{indent}{line_prefix}{spacer}{dp}{item}{ds}'
+                    else:
+                        treeline = f'{indent}{spacer}{dp}{item}{ds}'
+                        
                     tree = self._handle_tree(tree, treeline, print_tree)
                     next_indent = f'{indent}{object_prefix}'
                     tree = self.generate(full_item_path, indent=next_indent, print_tree=print_tree, _tree=tree)
                 else:
+                    
+                    if self.line_prefix_preceeds_spacer:
+                        treeline = f'{indent}{line_prefix}{spacer}{item}'
+                    else:
+                        treeline = f'{indent}{spacer}{item}'
+                        
                     tree = self._handle_tree(tree, treeline, print_tree) 
 
         else:
