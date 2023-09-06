@@ -31,24 +31,21 @@ class TreeGenerator:
         'last_line_prefix': '◆',
         'directory_prefix': '',
         'directory_suffix': ' 📁',
-        'spacer': '➔ '
-    }
+        'spacer': '➔ '}
 
     WINDOWS = {
         'line_prefix': '|',
         'last_line_prefix': '+',
         'directory_prefix': '',
         'directory_suffix': '',
-        'spacer': '-'
-    }
+        'spacer': '-'}
 
     ASCII = {
         'line_prefix': '|',
         'last_line_prefix': '/',
         'directory_prefix': '',
         'directory_suffix': '',
-        'spacer': '-'
-    }
+        'spacer': '-'}
 
     def __init__(self, line_prefix: str = '|', last_line_prefix: str = '`', 
                  directory_prefix: str = '', directory_suffix: str = ':', 
