@@ -26,6 +26,30 @@ class TreeGenerator:
         'spacer': '>--> ',
         'line_prefix_preceeds_spacer': False}
 
+    FANCY = {
+        'line_prefix': '▶',
+        'last_line_prefix': '◆',
+        'directory_prefix': '',
+        'directory_suffix': ' 📁',
+        'spacer': '➔ '
+    }
+
+    WINDOWS = {
+        'line_prefix': '|',
+        'last_line_prefix': '+',
+        'directory_prefix': '',
+        'directory_suffix': '',
+        'spacer': '-'
+    }
+
+    ASCII = {
+        'line_prefix': '|',
+        'last_line_prefix': '/',
+        'directory_prefix': '',
+        'directory_suffix': '',
+        'spacer': '-'
+    }
+
     def __init__(self, line_prefix: str = '|', last_line_prefix: str = '`', 
                  directory_prefix: str = '', directory_suffix: str = ':', 
                  spacer: str = '-- ', line_prefix_preceeds_spacer = True,
