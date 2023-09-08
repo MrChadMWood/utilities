@@ -27,9 +27,9 @@ def argparse_decorator(func):
     ```
     From Command Line:
     ```
-    # python -m test_app --a=1,2,3 --b="s", --c="not default value"
+    # python -m test_app --a=1 2 3 --b="s", --c="not default value"
     
-    a: ['1', ',', '2', ',', '3']
+    a: ['1', '2', '3']
     b: s
     c: not default value
     ```
@@ -43,13 +43,18 @@ def argparse_decorator(func):
         for param_name, param_info in parameters.items():
             param_type = param_info.annotation or type(param_info.default)
             
+            arg_config = {}
+            if param_type == list:
+                arg_config.update({'nargs': '*'})
+                param_type = str
+            
             # If the parameter has a default value
             if param_info.default != inspect.Parameter.empty:
                 # Use the default value as the argparse default
-                parser.add_argument(f'--{param_name}', type=param_type, default=param_info.default)
-            else:
-                # The argument is required without a default val
-                parser.add_argument(f'--{param_name}', type=param_type, required=True)
+                arg_config.update({'default': param_info.default})
+            
+            arg_config['type'] = param_type
+            parser.add_argument(f'--{param_name}', **arg_config)
 
         args_namespace = parser.parse_args()
         args_dict = vars(args_namespace)
