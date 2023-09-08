@@ -16,12 +16,22 @@ def argparse_decorator(func):
 
     Example usage:
     ```
+    # test_app.py
+    
     @argparse_decorator
-    def foo(a: list, b: str, c: float = 3.14):
-        print(f'a: {a}\nb: {b}\nc: {c}')
+    def foo(a: list, b: str, c: str = "default value"):
+        print(f'a: {}\nb: {b}\nc: {c}')
 
     if __name__ == "__main__":
         foo()
+    ```
+    From Command Line:
+    ```
+    # python -m test_app --a=1,2,3 --b="s", --c="not default value"
+    
+    a: ['1', ',', '2', ',', '3']
+    b: s
+    c: not default value
     ```
     '''
     parameters = inspect.signature(func).parameters
