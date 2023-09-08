@@ -3,6 +3,11 @@ import os
 class TreeGenerator:
     """
     Generates a textual representation of a directory tree.
+
+    Attributes:
+        MINIMAL (dict): A set of minimal-style formatting options for tree generation.
+        FULL (dict): A set of full-style formatting options for tree generation.
+        ARROW (dict): A set of arrow-style formatting options for tree generation.
     """
     MINIMAL = {
         'line_prefix': '', 
@@ -39,6 +44,8 @@ class TreeGenerator:
             last_line_prefix (str): The character or string for the line that connects the last item in a level.
             directory_suffix (str): The suffix to be added to directory names.
             spacer (str): The string used to separate tree lines from directory/file names.
+            line_prefix_precedes_spacer (bool): Whether line_prefix appears before spacer.
+            ignore (list): List of directory/file names to ignore during tree generation.
         """
         if len(line_prefix) != len(last_line_prefix):
             raise AttributeError('line_prefix and last_line_prefix must have the same length.')
@@ -77,8 +84,9 @@ class TreeGenerator:
 
         Args:
             path (str): The starting directory path for generating the tree.
-            indent (str): The current indentation level.
             print_tree (bool): Whether to print the tree as it's generated.
+            indent (str): The current indentation level, for recursive use.
+            _tree (str): Internal parameter for recursive use.
 
         Returns:
             str: The generated directory tree.
