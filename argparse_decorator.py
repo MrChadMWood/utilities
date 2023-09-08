@@ -58,6 +58,7 @@ def argparse_decorator(func):
 
         args_namespace = parser.parse_args()
         args_dict = vars(args_namespace)
-        return func(**args_dict)
+        user_specified_args = {k: v for k, v in args_dict.items() if v is not None}
+        return func(**user_specified_args)
 
     return wrapper
