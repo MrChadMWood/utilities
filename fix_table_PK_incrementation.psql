@@ -1,0 +1,1 @@
+SELECT setval(pg_get_serial_sequence('{schema.table}', '{primary_key_col_name}'), (SELECT MAX({primary_key_col_name}) FROM {schema.table}));
