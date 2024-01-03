@@ -182,17 +182,20 @@ def generate_docker_env_file(variables_dict, output_file=".env", raise_if_unsani
 
 
 def main():
-    jobs = {
-        'docker-secrets.json': generate_docker_secrets_files,
-        'docker-env.json': generate_docker_env_file
-    }
-    config = {
-        'output_directory': '.secrets',
-        'output_file': '.env'
-    }
+    jobs = {}
+    config = {}
+    secrets_map = 'docker-secrets.json'
+    env_map = 'docker-env.json'
 
-    check_for_secrets(**config)
-    check_for_env(**config)
+    if os.path.exists(secrets_map):
+        jobs.update({'docker-secrets.json': generate_docker_secrets_files})
+        config.update({'output_directory': '.secrets'})
+        check_for_secrets(**config)
+
+    if os.path.exists(env_map):
+        jobs.update({'docker-env.json': generate_docker_env_file})
+        config.update({'output_file': '.env'})
+        check_for_env(**config)
 
     for file_path, processor_func in jobs.items():
         param_dict = read_local_file(file_path)
