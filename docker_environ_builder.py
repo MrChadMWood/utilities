@@ -15,6 +15,17 @@ and environment variable files.
 
 Using `main` is recommended as it performs sanitation checks prior
 to calling parameters from AWS.
+
+This program exjects files in the working directory named:
+    docker-secrets.json
+    docker-env.json
+
+Either file is a flat JSON file.
+For docker-secrets.json, keys represent desired filenames and values represent AWS SSM parameter path/name
+For docker-env.json, keys represent desired env-var keys and values represent AWS SSM parameter path/name
+
+This program is not omnipotent. Running once will generate files and running again will raise error 
+while those files are undeleted.
 """
 
 
