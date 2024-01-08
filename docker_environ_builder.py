@@ -181,22 +181,53 @@ def generate_docker_env_file(variables_dict, output_file=".env", raise_if_unsani
         logger.info(f'Wrote {output_file}.')
 
 
+def collect_env_params(param_names=[], env_map_file_path='docker-env.json', region='us-west-1'):
+    """
+    Collects environment parameters from AWS Systems Manager (SSM) Parameter Store.
+
+    Args:
+        param_names (list, optional): List of parameter names to retrieve from SSM.
+                                      If not provided, it attempts to read from the 'docker-env.json' file.
+        env_map_file_path (str, optional): Path to the 'docker-env.json' file.
+                                           Default is 'docker-env.json' in the working directory.
+        region (str, optional): The AWS region. Default is 'us-west-1'.
+
+    Returns:
+        A dictionary containing key-value pairs with parameter names as keys
+        and their values from the get_parameters API call.
+    Raises:
+        ValueError: If param_names is empty and env_map_file_path is not found.
+    """
+    if not param_names:
+        if os.path.exists(env_map_file_path):
+            param_dict  = read_local_file(env_map_file_path)
+            param_names = list(param_dict.values())
+        else:
+            raise ValueError('Must supply parameter names.')
+        
+    ssm_params = retrieve_parameters(parameter_names=param_names, region=region, deconstruct=True)
+    return ssm_params
+    
+    
 def main():
     jobs = {}
     config = {}
     secrets_map = 'docker-secrets.json'
     env_map = 'docker-env.json'
 
+    # Handles checking for existing values before req of values
     if os.path.exists(secrets_map):
-        jobs.update({'docker-secrets.json': generate_docker_secrets_files})
+        jobs.update({secrets_map: generate_docker_secrets_files})
         config.update({'output_directory': '.secrets'})
         check_for_secrets(**config)
 
+    # Handles checking for existing values before req of values
     if os.path.exists(env_map):
-        jobs.update({'docker-env.json': generate_docker_env_file})
+        jobs.update({env_map: generate_docker_env_file})
         config.update({'output_file': '.env'})
         check_for_env(**config)
 
+    # Requests values as needed, generates output files dynamically
     for file_path, processor_func in jobs.items():
         param_dict = read_local_file(file_path)
         data       = map_keys_to_ssm_params(param_dict)
