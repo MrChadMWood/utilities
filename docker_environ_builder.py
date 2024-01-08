@@ -193,20 +193,21 @@ def collect_env_params(param_names=[], env_map_file_path='docker-env.json', regi
         region (str, optional): The AWS region. Default is 'us-west-1'.
 
     Returns:
-        A dictionary containing key-value pairs with parameter names as keys
-        and their values from the get_parameters API call.
+        dict: If param_names is provided, returns a dictionary containing key-value pairs
+              with parameter names as keys and their values from the get_parameters API call.
+              If env_map_file_path is used, returns a dictionary with keys retained from the env_map_file_path file.
+
     Raises:
         ValueError: If param_names is empty and env_map_file_path is not found.
     """
     if not param_names:
         if os.path.exists(env_map_file_path):
             param_dict  = read_local_file(env_map_file_path)
-            param_names = list(param_dict.values())
+            return map_keys_to_ssm_params(param_dict, region=region)
         else:
             raise ValueError('Must supply parameter names.')
         
-    ssm_params = retrieve_parameters(parameter_names=param_names, region=region, deconstruct=True)
-    return ssm_params
+    return retrieve_parameters(parameter_names=param_names, region=region, deconstruct=True)
     
     
 def main():
