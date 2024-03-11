@@ -26,6 +26,9 @@ def exec(q, db_params=None, conn=None, is_dataset=False):
     Raises:
     Exception: If any error occurs during query execution, an exception is raised.
     """
+    if not db_params and not conn:
+        raise ValueError('Either `db_params` or `conn` is required.')
+        
     response = None
     try:
         # Establishes connection
@@ -43,6 +46,7 @@ def exec(q, db_params=None, conn=None, is_dataset=False):
                 return data
             else:
                 conn.commit()
+                conn.close()
                 return response
         
     except Exception as e:
