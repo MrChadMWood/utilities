@@ -49,4 +49,4 @@ def exec(q, db_params=None, conn=None, is_dataset=False):
         if conn is not None:
             conn.rollback()
             conn.close()
-        raise Exception from e
+        raise e
