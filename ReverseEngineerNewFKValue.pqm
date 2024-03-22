@@ -1,0 +1,1 @@
+= Table.AddColumn(#"LastStepName", "ColumnName", each List.PositionOf(List.Distinct(#"LastStepName"[ColumnName]), [ColumnName]), Int64.Type)
