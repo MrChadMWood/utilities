@@ -1,3 +1,6 @@
+import psycopg2
+
+
 # Postgres query handler
 def psql_exec(q, db_params=None, conn=None, return_data=False, q_params: tuple = ()):
     """
@@ -27,12 +30,14 @@ def psql_exec(q, db_params=None, conn=None, return_data=False, q_params: tuple =
     Raises:
     Exception: If any error occurs during query execution, an exception is raised.
     """
+    close_conn = False
     if not db_params and not conn:
         raise ValueError('Either `db_params` or `conn` is required.')
         
     try:
         # Establishes connection
         if conn is None:
+            close_conn = True
             conn = psycopg2.connect(**db_params)
 
         # Collects response
@@ -49,11 +54,11 @@ def psql_exec(q, db_params=None, conn=None, return_data=False, q_params: tuple =
     except Exception as e:
         if conn is not None:
             conn.rollback()
-            conn.close()
-        raise e
+            if close_conn:
+                conn.close()
+        raise e   
         
     else:
-        conn.close()
-        
-    finally:
+        if close_conn:
+            conn.close()
         return data
