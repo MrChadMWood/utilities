@@ -1,4 +1,6 @@
-def exec(q, db_params=None, conn=None, is_dataset=False):
+# Postgres query handler
+
+def psql_exec(q, db_params=None, conn=None, is_dataset=False, q_params: tuple = ()):
     """
     Execute the given SQL query and return the result.
 
@@ -37,7 +39,7 @@ def exec(q, db_params=None, conn=None, is_dataset=False):
 
         # Collects response
         with conn.cursor() as cursor:
-            response = cursor.execute(q)
+            response = cursor.execute(q, q_params)
             if is_dataset:
                 data = []
                 headers = [desc[0] for desc in cursor.description]
