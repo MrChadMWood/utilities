@@ -1,5 +1,4 @@
 # Postgres query handler
-
 def psql_exec(q, db_params=None, conn=None, return_data=False, q_params: tuple = ()):
     """
     Execute the given SQL query and return the result.
@@ -31,7 +30,6 @@ def psql_exec(q, db_params=None, conn=None, return_data=False, q_params: tuple =
     if not db_params and not conn:
         raise ValueError('Either `db_params` or `conn` is required.')
         
-    response = None
     try:
         # Establishes connection
         if conn is None:
@@ -39,20 +37,23 @@ def psql_exec(q, db_params=None, conn=None, return_data=False, q_params: tuple =
 
         # Collects response
         with conn.cursor() as cursor:
-            response = cursor.execute(q, q_params)
+            cursor.execute(q, q_params)
             if return_data:
                 data = []
                 headers = [desc[0] for desc in cursor.description]
                 for row in cursor.fetchall():
                     data.append(dict(zip(headers, row)))
-                return data
             else:
-                conn.commit()
-                conn.close()
-                return response
-        
+                data = conn.commit()
+                
     except Exception as e:
         if conn is not None:
             conn.rollback()
             conn.close()
         raise e
+        
+    else:
+        conn.close()
+        
+    finally:
+        return data
