@@ -1,6 +1,6 @@
 # Postgres query handler
 
-def psql_exec(q, db_params=None, conn=None, is_dataset=False, q_params: tuple = ()):
+def psql_exec(q, db_params=None, conn=None, return_data=False, q_params: tuple = ()):
     """
     Execute the given SQL query and return the result.
 
@@ -13,7 +13,7 @@ def psql_exec(q, db_params=None, conn=None, is_dataset=False, q_params: tuple = 
     conn : psycopg2.extensions.connection, optional
         Existing database connection object (default is None). If not provided,
         a new connection will be established using `db_params`.
-    is_dataset : bool, optional
+    return_data : bool, optional
         Indicates whether the query returns a dataset (default is False). If True,
         the result will be a list of dictionaries where each dictionary represents
         a row of data with keys corresponding to the column names. If False, the result
@@ -21,8 +21,8 @@ def psql_exec(q, db_params=None, conn=None, is_dataset=False, q_params: tuple = 
 
     Returns:
     list of dict or any : The result of the query execution.
-        If `is_dataset` is True, returns a list of dictionaries where each dictionary
-        represents a row of data with keys corresponding to the column names. If `is_dataset`
+        If `return_data` is True, returns a list of dictionaries where each dictionary
+        represents a row of data with keys corresponding to the column names. If `return_data`
         is False, returns the return value of the `cursor.execute` method.
 
     Raises:
@@ -40,7 +40,7 @@ def psql_exec(q, db_params=None, conn=None, is_dataset=False, q_params: tuple = 
         # Collects response
         with conn.cursor() as cursor:
             response = cursor.execute(q, q_params)
-            if is_dataset:
+            if return_data:
                 data = []
                 headers = [desc[0] for desc in cursor.description]
                 for row in cursor.fetchall():
