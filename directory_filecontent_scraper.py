@@ -18,7 +18,7 @@ def main():
     args = parser.parse_args()
 
     directory_path = args.directory
-    base_dirname = os.path.basename(directory_path)
+    base_dirname = os.path.basename(directory_path.rstrip('\\/'))
     output_file_path = f"{base_dirname}_output.md"
     
     with open(output_file_path, 'w') as markdown_file:
