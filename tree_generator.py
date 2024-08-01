@@ -1,6 +1,10 @@
+# tree_generator.py
+
 import sys
-sys.dont_write_bytecode = True
 import os
+import argparse
+
+sys.dont_write_bytecode = True
 
 
 class TreeGenerator:
@@ -38,7 +42,7 @@ class TreeGenerator:
     def __init__(self, line_prefix: str = '|', last_line_prefix: str = '`', 
                  directory_prefix: str = '', directory_suffix: str = ':', 
                  spacer: str = '-- ', line_prefix_preceeds_spacer = True,
-                 ignore: list = []):
+                 treeignore: str | bool = ''):
         """
         Initialize the TreeGenerator with formatting options.
 
@@ -48,7 +52,7 @@ class TreeGenerator:
             directory_suffix (str): The suffix to be added to directory names.
             spacer (str): The string used to separate tree lines from directory/file names.
             line_prefix_precedes_spacer (bool): Whether line_prefix appears before spacer.
-            ignore (list): List of directory/file names to ignore during tree generation.
+            treeignore (str): Path to a .treeignore file, works like .gitignore . True to check workdir
         """
         if len(line_prefix) != len(last_line_prefix):
             raise AttributeError('line_prefix and last_line_prefix must have the same length.')
@@ -61,7 +65,24 @@ class TreeGenerator:
         self.directory_prefix = directory_prefix
         self.directory_suffix = directory_suffix
         self.line_prefix_preceeds_spacer = line_prefix_preceeds_spacer
-        self.ignore = ignore
+
+        ignore_patterns = []
+
+        if treeignore is True:
+            treeignore_path = os.path.join(os.getcwd(), '.treeignore')
+        elif treeignore:
+            treeignore_path = treeignore
+        else:
+            treeignore_path = None
+
+        if treeignore_path:
+            if not os.path.isfile(treeignore_path):
+                raise ValueError(f'Unable to find .treeignore file: {treeignore_path}')
+
+            with open(treeignore_path, 'r') as f:
+                ignore_patterns = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
+        self.treeignore = ignore_patterns
     
     @staticmethod
     def _handle_tree(tree: str, treeline: str, print_tree: bool) -> str:
@@ -80,6 +101,24 @@ class TreeGenerator:
         if print_tree:
             print(treeline)
         return tree
+
+    @staticmethod
+    def _is_ignored(path: str, ignore_patterns: list) -> bool:
+        """
+        Check if a given path should be ignored based on ignore patterns.
+
+        Args:
+            path (str): The path to check.
+            ignore_patterns (list): List of patterns to ignore.
+
+        Returns:
+            bool: True if the path should be ignored, False otherwise.
+        """
+        from fnmatch import fnmatch
+        for pattern in ignore_patterns:
+            if fnmatch(path, pattern):
+                return True
+        return False
             
     def generate(self, path: str, indent: str = '', print_tree: bool = False, _tree: str = None) -> str:
         """
@@ -105,7 +144,10 @@ class TreeGenerator:
             
             items = sorted(os.listdir(path))
             for index, item in enumerate(items):
-                if item in self.ignore:
+                full_item_path = os.path.join(path, item)
+
+                if self._is_ignored(full_item_path, self.treeignore):
+                    print(f'ignoring: {full_item_path}')
                     continue
                     
                 full_item_path = os.path.join(path, item)
@@ -136,3 +178,27 @@ class TreeGenerator:
             raise FileNotFoundError(f"No such file or directory found '{path}'")
             
         return tree
+
+
+def main():
+    parser = argparse.ArgumentParser(description='Generate a directory tree.')
+    parser.add_argument('--path', type=str, help='The directory path to generate the tree for.')
+    parser.add_argument('--out', type=str, help='The filename to save to.')
+    parser.add_argument('--print', action='store_true', help='Print the tree to the console.')
+    parser.add_argument('--treeignore', action='store_true', help='Whether to check for a .treeignore file in working directory.')
+
+    args = parser.parse_args()
+
+    tree_generator = TreeGenerator(treeignore=args.treeignore)
+    tree = tree_generator.generate(args.path, print_tree=args.print)
+
+    if args.out:
+        with open(args.out, "w") as file:
+            file.write(tree)
+
+    if args.print:
+        print(tree)
+
+
+if __name__ == '__main__':
+    main()
